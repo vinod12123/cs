@@ -1,0 +1,149 @@
+{
+  "theme": "dark",
+  "archetype": "Swiss & High-Contrast (Dark Technical Variant)",
+  "color_tokens": {
+    "background": "#050a14",
+    "background_2": "#0a1223",
+    "panel": "#0e1830",
+    "panel_2": "#13203c",
+    "border_line": "#1d2a4a",
+    "border_line_2": "#2a3a60",
+    "text_ink": "#eaf0fb",
+    "text_dim": "#9bb0d4",
+    "text_mute": "#5a709a",
+    "primary_azure": "#3b9fe0",
+    "accent_azure_light": "#5ab8f0",
+    "accent_azure_deep": "#1e3a8a",
+    "signal_mint": "#5eead4",
+    "signal_warn": "#ffb259",
+    "signal_danger": "#ff4d7a",
+    "grid_pattern": "rgba(91, 184, 240, 0.05)"
+  },
+  "fonts": {
+    "headings": "Inter Tight, sans-serif",
+    "body": "Inter Tight, sans-serif",
+    "data_eyebrow": "JetBrains Mono, monospace",
+    "emphasis": "Instrument Serif, serif",
+    "instructions": "Use Instrument Serif specifically for italicized emphasis words within Inter Tight headings to create visual tension. JetBrains Mono is strictly for numeric data, logs, and eyebrow tags."
+  },
+  "typography_scales": {
+    "h1": "text-5xl md:text-6xl+ tracking-tight",
+    "h2": "text-3xl md:text-4xl tracking-tight",
+    "h3": "text-xl md:text-2xl",
+    "body": "text-base leading-relaxed text-dim",
+    "eyebrow": "text-xs uppercase tracking-[0.2em] font-mono text-primary_azure",
+    "data_large": "text-4xl font-mono tracking-tight text-ink",
+    "data_label": "text-sm font-mono text-mute"
+  },
+  "layout_spacing": {
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_gap": "py-24 md:py-32",
+    "card_padding": "p-6 md:p-8",
+    "grid_gap": "gap-6 md:gap-8",
+    "bento_grid": "Gridcols-1 md:grid-cols-12 gap-6"
+  },
+  "components": [
+    {
+      "name": "HeroSection",
+      "description": "Full height split hero. Left: Text stack with glowing eyebrow, H1 mixing sans and italic serif, right: glassmorphic live orchestration log card with glowing metric KPIs (MTTR, cloud waste avoided).",
+      "style": "bg-background relative with subtle grid_pattern overlay. Data-testid: hero-section"
+    },
+    {
+      "name": "TrustedMarquee",
+      "description": "Infinite smooth scrolling marquee of partner logos. Low opacity, monochrome treatment.",
+      "style": "border-y border-border_line bg-background_2 py-8. Data-testid: trusted-marquee"
+    },
+    {
+      "name": "REIHeroCard",
+      "description": "Large bento card showing Revenue-at-risk pricing connecting incidents to real dollars.",
+      "style": "col-span-full border border-border_line bg-panel p-8 md:p-12 shadow-2xl relative overflow-hidden. Data-testid: rei-hero-card"
+    },
+    {
+      "name": "UseCaseAISRE",
+      "description": "Animated investigation timeline with live burn ticker ($/min) and ranked recommendations.",
+      "style": "Grid layout, left text, right interactive visual. Data-testid: use-case-ai-sre"
+    },
+    {
+      "name": "UseCaseFinOps",
+      "description": "Cost dashboard mockup displaying $128K idle, $204K right-sizing, $2.4M savings with real-time anomaly feed.",
+      "style": "Bento sub-grid. Data-testid: use-case-finops"
+    },
+    {
+      "name": "UseCaseObservability",
+      "description": "Metrics tiles with causal AI topology insights and SVG sparkline charts.",
+      "style": "Grid of small metric cards over an abstract topology background. Data-testid: use-case-observability"
+    },
+    {
+      "name": "AstraUnderTheHood",
+      "description": "16 specialized agents grid. Dense, technical layout with 1px borders and hover states.",
+      "style": "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 border-collapse. Data-testid: astra-agents-grid"
+    },
+    {
+      "name": "ComparisonTable",
+      "description": "Competitive comparison table CloudScore vs Bacca/NeuBird/Cleric/Lightrun.",
+      "style": "glassmorphic table, sticky headers, subtle hover rows. Data-testid: comparison-table"
+    },
+    {
+      "name": "IntegrationsGrid",
+      "description": "Grid of 60+ tool icons, focusing on MCP.",
+      "style": "Dense icon grid with floating animation on hover. Data-testid: integrations-grid"
+    },
+    {
+      "name": "CTASection",
+      "description": "Final CTA and contact/book demo form.",
+      "style": "bg-panel border-t border-border_line py-32. Data-testid: cta-section"
+    },
+    {
+      "name": "StickyNav",
+      "description": "Sticky navigation with backdrop blur.",
+      "style": "fixed top-0 w-full z-50 backdrop-blur-xl bg-background/60 border-b border-border_line/40. Data-testid: sticky-nav"
+    }
+  ],
+  "motion_specs": {
+    "hover_state": "transition-all duration-300 ease-out",
+    "card_hover": "hover:-translate-y-1 hover:border-border_line_2 hover:shadow-[0_8px_30px_rgba(59,159,224,0.1)]",
+    "staggered_entrance": "Framer Motion: initial {opacity: 0, y: 20}, animate {opacity: 1, y: 0}, transition {staggerChildren: 0.1}",
+    "log_stream": "Infinite linear scrolling of log lines, glowing on new entry.",
+    "topology_pulse": "SVG lines with animated stroke-dashoffset to simulate data flowing between nodes."
+  },
+  "svg_patterns": [
+    "Grid pattern overlay: <svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 100V0h100\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" opacity=\"0.05\"/></svg>",
+    "Topology nodes: Connected dots with glowing filters",
+    "Sparklines: <svg viewBox=\"0 0 100 20\"><path d=\"M0,20 L10,15 L20,18 L30,5 L40,10 L50,2 L60,8 L70,0 L80,12 L90,6 L100,10\" fill=\"none\" stroke=\"var(--signal-mint)\" stroke-width=\"2\"/></svg>"
+  ],
+  "media": {
+    "images": [
+      {
+        "url": "/brand/cloudscore-logo.png",
+        "category": "logo",
+        "description": "CloudScore primary logo"
+      },
+      {
+        "url": "/brand/cloudscore-mark.png",
+        "category": "logo",
+        "description": "CloudScore mark/icon"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1759242951337-d0eda5bbc3fb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxhd3MlMjBsb2dvfGVufDB8fHx8MTc3ODI5OTQ2NHww&ixlib=rb-4.1.0&q=85",
+        "category": "trusted_logo",
+        "description": "AWS Partner Logo"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1762278804941-27ff5cba5a2e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhcmslMjBibHVlJTIwbmV0d29ya3xlbnwwfHx8fDE3NzgyOTk0OTV8MA&ixlib=rb-4.1.0&q=85",
+        "category": "background",
+        "description": "Abstract dark blue network background for Observability topology section"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1683634917905-872c40ce4ea3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxjeWJlciUyMGdsb3dpbmclMjBncmlkfGVufDB8fHx8MTc3ODI5OTQ5NXww&ixlib=rb-4.1.0&q=85",
+        "category": "background",
+        "description": "Cyber glowing grid background for Astra agents under the hood section"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1774023802584-5edd7adfce6e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGRhdGElMjBwYXJ0aWNsZXN8ZW58MHx8fHwxNzc4Mjk5NDk0fDA&ixlib=rb-4.1.0&q=85",
+        "category": "background",
+        "description": "Abstract data particles for FinOps savings card background"
+      }
+    ],
+    "instructions_to_main_agent": "Use exact brand color tokens. Never use Tailwind's default slate/gray; construct custom gradients using background_2 to panel colors. Ensure all charts and graphs use JetBrains Mono for data points. Ensure data-testid attributes are present on every interactive and key informational element. All animations must respect prefers-reduced-motion. SVG charts must use the signal tokens (mint, warn, danger) for stroke colors. Create custom Shadcn components if necessary to achieve the glassmorphic, 1px border aesthetic without generic card padding."
+  }
+}

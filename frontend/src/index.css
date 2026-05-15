@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* CloudScore brand tokens (LIGHT) */
+  --bg: #eef2f8;
+  --bg-2: #f7f9fc;
+  --panel: #ffffff;
+  --panel-2: #f4f6fb;
+  --line: #dde3ee;
+  --line-2: #c8d1e0;
+  --ink: #0a1426;
+  --ink-dim: #4a5876;
+  --ink-mute: #8895ad;
+  --accent: #2563eb;
+  --accent-2: #3b82f6;
+  --accent-deep: #1e3a8a;
+  --accent-ink: #ffffff;
+  --signal: #10b981;
+  --warn: #f59e0b;
+  --danger: #e11d48;
+  --grid: rgba(37, 99, 235, 0.06);
+}
+
+html,
+body,
+#root {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter Tight", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "ss02", "cv11";
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(900px 600px at 90% -10%, rgba(59, 130, 246, 0.10), transparent 60%),
+    radial-gradient(900px 700px at -10% 30%, rgba(37, 99, 235, 0.08), transparent 60%),
+    var(--bg);
+}
+
+.font-mono,
+.mono {
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-feature-settings: "calt" 0;
+}
+
+.serif,
+.font-serif {
+  font-family: "Instrument Serif", "Times New Roman", serif;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+/* Grid pattern background */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.bg-grid-fine {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 8px;
+  border: 2px solid var(--bg-2);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--accent-deep);
+  box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 500;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--accent-deep);
+}
+
+/* Glass / panel card */
+.glass {
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 32px -18px rgba(10, 20, 38, 0.18);
+}
+
+.hairline {
+  border: 1px solid var(--line);
+}
+.hairline-2 {
+  border: 1px solid var(--line-2);
+}
+
+.eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.divider-x {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--line-2) 10%,
+    var(--line-2) 90%,
+    transparent
+  );
+}
+
+/* Marquee */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 36s linear infinite;
+}
+.marquee-track-slow {
+  animation: marquee 60s linear infinite;
+}
+
+/* Pulse dot */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+/* Stream blink */
+@keyframes streamFade {
+  0% { opacity: 0; transform: translateY(6px); }
+  20%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0.4; transform: translateY(0); }
+}
+
+/* Shimmer line */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(37, 99, 235, 0.15),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Topology pulse */
+@keyframes dashflow {
+  to { stroke-dashoffset: -200; }
+}
+.dashflow {
+  stroke-dasharray: 6 8;
+  animation: dashflow 6s linear infinite;
+}
+
+/* Soft glow utility */
+.glow-azure {
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.10),
+    0 24px 80px -20px rgba(37, 99, 235, 0.22);
+}
+
+/* Headline serif italic emphasis */
+.headline {
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  color: var(--ink);
+}
+.headline em,
+.headline .serif {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.headline .serif-accent {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  letter-spacing: -0.015em;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .marquee-track-slow,
+  .pulse-dot,
+  .shimmer,
+  .dashflow {
+    animation: none !important;
+  }
+}
+
+/* Shadcn variable bridge (light) */
+@layer base {
+  :root {
+    --background: 218 36% 95%;
+    --foreground: 218 60% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 218 60% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 60% 9%;
+    --primary: 217 91% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 218 36% 95%;
+    --secondary-foreground: 218 60% 9%;
+    --muted: 218 36% 95%;
+    --muted-foreground: 218 18% 45%;
+    --accent: 218 36% 95%;
+    --accent-foreground: 218 60% 9%;
+    --destructive: 348 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 218 22% 90%;
+    --input: 218 22% 90%;
+    --ring: 217 91% 53%;
+    --radius: 12px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}

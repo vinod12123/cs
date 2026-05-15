@@ -1,0 +1,1460 @@
+
+
+
+
+CloudScore.ai
+
+ASTRA
+
+Autonomous SRE & Threat Response Architecture
+
+
+
+
+Product Requirements Document (PRD)
+
+AI-Driven Investigation, Root Cause Analysis & Autonomous Remediation
+
+
+Version
+v1.0  —  April 2026
+Status
+APPROVED FOR DEVELOPMENT
+Owner
+Balaji (CEO/Founder)
+CTO
+Hari Krishna
+CPTO
+Ram Patel
+Co-Founder
+Satish Nagpal
+Classification
+CONFIDENTIAL
+
+
+
+
+
+
+
+
+
+1. Executive Summary
+
+ASTRA (Autonomous SRE & Threat Response Architecture) is CloudScore.ai&apos;s flagship 16-agent autonomous incident intelligence platform. Built on LangGraph, open-source LLMs via Ollama, and MongoDB Atlas, ASTRA unifies production telemetry, code context, infrastructure state, and runbook knowledge into a single continuously-learning system that detects, investigates, explains, and remediates incidents — autonomously and at production speed.
+
+
+
+This PRD defines the full feature set, agent architecture, UI/UX flows, and API contracts required to build ASTRA&apos;s investigation engine, root cause analysis (RCA) module, recommendation system, and automated pull request (PR) generation pipeline — modeled on and extending the capabilities observed in Resolve.ai&apos;s product, with CloudScore&apos;s distinctive REI (Reliability Economics Intelligence) layer as a key differentiator.
+
+
+
+Strategic Window
+
+Competitive research confirms a 12–18 month window to own the "SRE + FinOps intelligence" category before hyperscalers close the gap. ASTRA&apos;s combination of autonomous investigation, financial impact quantification (REI), and open-source LLM architecture creates a moat that proprietary solutions like Resolve.ai, PagerDuty AIOps, and Datadog Bits AI cannot easily replicate.
+
+
+
+
+
+2. Product Vision & Goals
+
+
+2.1 Vision Statement
+
+"Make every on-call engineer 10x more effective by giving them an AI colleague that never sleeps — one that continuously monitors production, autonomously investigates anomalies, pinpoints root causes with supporting evidence, proposes and creates fixes, and quantifies the business cost of every incident in real time."
+
+
+
+
+2.2 Core Goals
+
+
+Mean Time to Resolution (MTTR) < 15 minutes: ASTRA autonomously completes initial investigation and surfaces root cause before a human engineer has finished reading the alert.
+
+
+Zero-touch incident triage: Eliminate the first 30–45 minutes of manual data gathering (logs, metrics, traces, deployment history) through automated evidence collection.
+
+
+Evidence-backed RCA: Every root cause hypothesis is scored with a confidence level (High / Medium / Low) and supported by timestamped, linked evidence from multiple signal sources.
+
+
+Automated remediation pipeline: ASTRA generates Terraform patches, kubectl commands, config changes, and GitHub PRs — all gated behind configurable approval workflows.
+
+
+REI integration: Every incident is automatically tagged with estimated financial impact (revenue at risk, SLA cost, infra cost spike) via CloudScore&apos;s Reliability Economics Intelligence engine.
+
+
+
+
+2.3 Success Metrics
+KPI
+Baseline (Manual)
+ASTRA Target
+Stretch Goal
+
+MTTR (P95)
+
+> 60 min
+
+< 15 min
+
+< 8 min
+
+Time to first RCA hypothesis
+
+45–90 min
+
+< 5 min
+
+< 2 min
+
+False positive rate on RCA
+
+N/A (human)
+
+< 12%
+
+< 6%
+
+Incidents requiring no human action
+
+0%
+
+35%
+
+55%
+
+PR merge success rate (auto-gen)
+
+N/A
+
+> 70%
+
+> 85%
+
+REI financial impact accuracy
+
+N/A
+
+± 15%
+
+± 8%
+
+
+
+
+
+3. Architecture Overview
+
+
+3.1 System Architecture — ASTRA Multi-Agent Control Plane
+
+ASTRA&apos;s architecture mirrors and extends Resolve.ai&apos;s four-pillar model (Knowledge, Reasoning, Action, Learning) with a 16-agent LangGraph-orchestrated system. Each agent is assigned a task-optimized Ollama model selected for its strengths at that specific cognitive task.
+
+
+Agent
+Role
+Ollama Model
+Key Responsibilities
+
+1. Orchestrator
+
+Control plane
+
+Llama 3.1 70B
+
+Routing, session context, approval boundaries, confidence thresholds, plan creation and updates
+
+2. Triage Agent
+
+First responder
+
+Llama 3.1 8B
+
+Alert normalization, severity classification, owner routing, deduplication, Slack/PagerDuty bridging
+
+3. Context Collector
+
+Knowledge ingestion
+
+Llama 3.1 8B
+
+Pulls deployment history, runbooks, docs, Slack history, Jira tickets correlated to alert window
+
+4. Infra Discovery Agent
+
+Topology mapper
+
+Mistral 7B
+
+Maps K8s topology (pods, nodes, services, namespaces), AWS resources (EC2, RDS, Lambda, MSK, VPC), GCP, Azure
+
+5. Telemetry Agent
+
+Signal collector
+
+Mistral 7B
+
+Fetches metrics, logs, traces from Datadog/Grafana/CloudWatch; builds signal timeline
+
+6. Planner / Hypothesis Agent
+
+Reasoning engine
+
+Llama 3.1 70B
+
+Generates ranked differential diagnoses; creates and updates multi-step investigation plan
+
+7. Evidence Synthesis Agent
+
+RCA engine
+
+Llama 3.1 70B
+
+Correlates signals across tools, builds causal timeline, ranks hypotheses with confidence scores, surfaces likely root cause
+
+8. Code & Deploy Agent
+
+Source intelligence
+
+CodeLlama 34B
+
+Searches git history, PRs, commits; identifies offending code changes; pins to file/line
+
+9. Log Analysis Agent
+
+Log intelligence
+
+Llama 3.1 8B
+
+Executes log queries (Loki/Datadog/CloudWatch); extracts error patterns, stack traces, anomaly windows
+
+10. Metrics Agent
+
+Metrics intelligence
+
+Mistral 7B
+
+Fetches dashboards, charts; analyzes CPU/memory/latency/error-rate patterns; detects change points
+
+11. Remediation Planner
+
+Fix strategist
+
+Llama 3.1 70B
+
+Proposes rollback, config fix, kubectl patch, Terraform change, or code PR; scopes to approval tier
+
+12. PR Generation Agent
+
+Code writer
+
+CodeLlama 34B
+
+Generates complete, compilable code fixes with before/after diffs; creates GitHub PR with description
+
+13. Critique Agent
+
+Quality gate
+
+Llama 3.1 70B
+
+Reviews RCA hypotheses, fix proposals, and PRs for correctness, safety, and completeness before human handoff
+
+14. Communication Agent
+
+Stakeholder bridge
+
+Llama 3.1 8B
+
+Formats incident updates for Slack threads, Jira comments, PagerDuty notes; tracks investigation complete
+
+15. REI Agent
+
+Financial intelligence
+
+Llama 3.1 70B
+
+Calculates real-time revenue at risk, SLA breach cost, infra cost spike; populates REI dashboard
+
+16. Learning Agent
+
+Memory & improvement
+
+Llama 3.1 8B
+
+Extracts reusable patterns; updates service topology, dependency graph, deployment timeline memory
+
+
+
+
+3.2 Production Context Ingestion (What ASTRA Continuously Understands)
+
+ASTRA maintains a continuously-updated context graph across four ingestion categories, mirroring Resolve.ai&apos;s production context model:
+
+
+Context Domain
+Sources
+
+Code & Deploy
+
+GitHub / GitLab (commits, PRs, branches, file blame), CI/CD pipelines, deployment timestamps, feature flags
+
+Infra & Cloud State
+
+AWS (EC2, RDS, Lambda, ECS, EKS, MSK, S3, VPC), Azure, GCP, Kubernetes (pods, nodes, deployments, services, namespaces, events), Terraform state
+
+Observability Telemetry
+
+Logs (Loki, Datadog Logs, CloudWatch), Metrics (Prometheus, Grafana, Datadog Metrics), Traces (Jaeger, Datadog APM, OpenTelemetry), Events (K8s events, PagerDuty alerts)
+
+Knowledge & Workflow
+
+Runbooks (Confluence, Notion, GitHub wiki), Incident history (Jira, PD), Slack channel history, On-call schedules (PD/OpsGenie), Architecture docs
+
+
+
+
+3.3 Technology Stack
+
+
+Agent Orchestration: LangGraph (stateful agent graph with IncidentState TypedDict)
+
+
+LLM Runtime: Ollama — open-source LLMs, task-optimized per agent (no vendor LLM lock-in)
+
+
+Data Platform: MongoDB Atlas — unified platform for telemetry, incident memory, agent state, and topology graph
+
+
+Backend: Node.js / Express (API layer), Python (agent execution)
+
+
+Frontend: React (investigation UI, report panel, PR review interface)
+
+
+Integration Layer: MCP Server (OAuth 2.0 tool catalog for all external integrations)
+
+
+Infrastructure: Kubernetes (EKS) — dedicated GPU node pool for Ollama models (CodeLlama 34B, Llama 3.1 70B)
+
+
+
+
+
+4. User Entry Points & System Triggers
+
+ASTRA supports four primary entry channels, directly mirroring the Resolve.ai architecture diagram:
+
+
+Channel
+Entry Mechanism
+ASTRA Behavior
+
+Slack / Teams
+
+Alert fires in incident channel; @ASTRA mention; direct message
+
+Triage Agent joins thread, acknowledges alert, posts initial classification (severity, owner, related services), begins autonomous investigation, posts findings as threaded updates with "View in ASTRA" CTA
+
+PagerDuty / Alerts
+
+PagerDuty webhook (incident created/updated), Grafana alert webhook, CloudWatch alarm
+
+Automatic investigation trigger — no human needed; Triage Agent ingests alert payload, enriches with service topology, escalates or auto-resolves based on confidence threshold
+
+Web App / Chat UI
+
+User types query in ASTRA chat UI, clicks "Investigate" on alert, or runs saved investigation template
+
+Full interactive investigation UI with split-panel (Investigation log left, Live Report right), real-time streaming of agent steps, interactive plan management
+
+Jira / Tickets
+
+Incident ticket creation, comment @ASTRA, post-incident review trigger
+
+ASTRA reads ticket context, correlates to production signals, appends RCA findings as ticket comment, creates sub-tasks for remediation action items
+
+
+
+
+
+5. Investigation Feature — Detailed Specification
+
+
+5.1 Investigation UI Layout
+
+The Investigation UI uses a two-panel layout identical to Resolve.ai&apos;s core pattern:
+
+
+LEFT PANEL — Investigation Log
+RIGHT PANEL — Live Report
+
+Plan Header:
+
+• Shows current plan step (e.g., "Plan  Step 4: Reviewing causal chain from deployment to deadlocks")
+
+Streaming Agent Steps:
+
+• Green checkmark + "Completed task name • Result summary" (e.g., "Exploring code files and changes • Found 3 relevant files")
+
+• Spinner icon + "In progress task name" for active steps
+
+• Expandable accordion for each step showing sub-tasks with timing
+
+Inline Evidence References:
+
+• Clickable • dots after metric values, timestamps, and code references that open inline evidence cards
+
+Message Input:
+
+• "Add message to the queue..." text area at bottom — user can inject questions or context mid-investigation
+
+Suggested Quick Actions:
+
+• Context-aware clickable chips (e.g., "check the code and find out", "specifically commit 06b4d9f")
+
+"Report" Header Bar:
+
+• "Report" title + thumbs up/down feedback buttons + "Updated X minutes ago" timestamp + export icon + fullscreen toggle
+
+Confidence Badge:
+
+• Pill badge: "High Confidence" (green), "Medium Confidence" (yellow), "Low Confidence" (red)
+
+Working Theory:
+
+• Bold headline summarizing root cause in one sentence
+
+• Structured sub-sections: Performance Impact Pattern, Root Cause Mechanism, Service Impact Assessment, Infrastructure Context, Recurring Schedule
+
+Evidence Timeline:
+
+• Chronological timeline showing key events with type tags (Query, Event, Deploy, Alert)
+
+• Inline mini-charts for metrics that are relevant to timeline events
+
+
+
+
+5.2 Investigation Plan Management
+
+The investigation is structured as a named, versioned plan with discrete steps. The Plan header is always visible at the top of the left panel, showing:
+
+
+Current plan name and active step number/description
+
+
+Plan is dynamically updated by the Orchestrator as new evidence changes priorities
+
+
+Critique Agent can flag plan gaps; user can override plan direction via message queue
+
+
+Each plan step maps to one or more agent tool calls with visible progress tracking
+
+
+
+
+5.2.1 Standard Investigation Plan Template
+#
+Step Name
+Agent Actions
+
+1
+
+Initial Investigation
+
+Triage Agent: normalize alert, classify severity, identify affected service(s). Context Collector: pull runbooks, recent Jira, deployment history. Infra Discovery: map service topology.
+
+2
+
+Environment Discovery
+
+Infra Discovery Agent: enumerate all infra resources (pods, workers, deployments, services, nodes, clusters, resource groups, AWS services). Build dependency graph.
+
+3
+
+Telemetry Deep-Dive
+
+Metrics Agent: pull dashboards, identify relevant charts (CPU, memory, latency, error rate, DB connections, IOPS). Log Analysis Agent: execute log queries, extract error patterns. Trace analysis if available.
+
+4
+
+Hypothesis Generation
+
+Planner/Hypothesis Agent: generate ranked differential diagnoses based on collected evidence. Assign initial confidence scores. Create sub-investigation tasks for top 2-3 theories.
+
+5
+
+Code & Deploy Analysis
+
+Code & Deploy Agent: correlate incident window to recent PRs/commits. Find offending code with file/line precision. Analyze change introduced by each suspect commit.
+
+6
+
+Causal Chain Review
+
+Evidence Synthesis Agent: build complete causal timeline from trigger event to customer impact. Confirm or rule out each hypothesis. Elevate highest-confidence theory to Working Theory.
+
+7
+
+Remediation Planning
+
+Remediation Planner: generate ranked remediation options (immediate fix, long-term fix, rollback). Score each by risk, effort, and effectiveness. Request approval tier assignment.
+
+8
+
+PR / Fix Generation
+
+PR Generation Agent: write complete code fix. Critique Agent: review for safety and correctness. Submit PR to GitHub with structured description. Notify on-call via Slack.
+
+9
+
+REI Impact Assessment
+
+REI Agent: calculate revenue at risk, SLA breach probability, infra cost delta. Tag incident record. Populate REI dashboard. Generate financial summary for stakeholders.
+
+10
+
+Investigation Conclusion
+
+Orchestrator: finalize report, mark investigation complete, export postmortem draft. Learning Agent: extract patterns, update service topology memory, tag incident for future correlation.
+
+
+
+
+
+6. Root Cause Analysis (RCA) Engine
+
+
+6.1 RCA Architecture
+
+The RCA engine consists of three agents working in sequence: the Planner/Hypothesis Agent (generates theories), Evidence Synthesis Agent (proves or disproves each), and the Critique Agent (quality gates the output). Together they produce a structured, evidence-backed root cause report with confidence scoring.
+
+
+
+
+6.2 Confidence Scoring Model
+Confidence Level
+Score Threshold
+Evidence Requirements
+
+HIGH
+
+≥ 80 points
+
+3+ independent corroborating signal types (e.g., logs + metrics + code diff), clear causal chain from trigger to symptom, no contradictory evidence, Critique Agent approved
+
+MEDIUM
+
+50–79 points
+
+2 corroborating signal types, plausible causal chain with one unconfirmed link, no strong contradictory evidence
+
+LOW
+
+< 50 points
+
+1 signal type, causal chain has gaps or relies on inference, or contradictory evidence exists
+
+
+
+
+6.3 RCA Report Structure (Right Panel)
+
+The live report renders progressively as agents complete each section. Final structure:
+
+
+
+
+Confidence Badge: Prominent pill showing HIGH / MEDIUM / LOW with color coding
+
+
+Working Theory Headline: One-sentence bold summary of the root cause (e.g., "Deployment-triggered deadlocks from lack of lock ordering in batch update logic")
+
+
+Root Cause Mechanism: Technical explanation of WHY the issue occurred, referencing specific code, queries, or config
+
+
+Performance Impact Pattern: What metrics spiked, when, to what values — with inline mini-charts
+
+
+Supporting Evidence (bulleted): Each bullet is a discrete, timestamped, linked evidence item with • dot for inline detail popup
+
+
+Service Impact Assessment: Which services were affected, customer-facing vs internal, error rates, latency impact
+
+
+Infrastructure Context: Resource state, recent changes, scaling events relevant to the incident
+
+
+Recurring Schedule: Whether this incident pattern has occurred before (from Learning Agent memory)
+
+
+Timeline: Chronological event sequence with GMT timezone label, event type tags (Query, Event, Deploy, Alert), and expandable detail per event
+
+
+Suggested Next Steps: Ranked remediation actions ordered by risk and effectiveness
+
+
+
+
+6.4 Evidence Reference System
+
+Every metric value, timestamp, or technical claim in the RCA report is annotated with a clickable bullet dot (•) that opens an inline evidence card showing:
+
+
+Raw data source (query, API call, or log entry that produced the value)
+
+
+Exact timestamp and time window
+
+
+Link to original data in Datadog, Grafana, CloudWatch, or GitHub
+
+
+Confidence contribution score (how much this evidence raised/lowered the hypothesis score)
+
+
+
+
+
+7. Service Inventory & Topology
+
+
+7.1 Infrastructure Discovery UI
+
+Mirroring Resolve.ai&apos;s Relationships and Events panel, ASTRA&apos;s Service Inventory UI presents discovered infrastructure in a structured multi-panel grid organized by entity type:
+
+
+Entity Category
+Entity Types
+UI Display
+
+Infrastructure
+
+Worker (kube_pod), Deployment (kube_replicaset / kube_deployment), Application (app_service), Service (kube_service), Node (kube_node), Cluster (kube_cluster), ResourceGroup (kube_namespace)
+
+Grid of entity cards per category, each card shows entity name, parent namespace/cluster, entity type tag, health status indicator
+
+Cloud Resources
+
+AWS EC2, RDS (PostgreSQL, MySQL), ElastiCache/Redis, MSK Kafka, S3 Buckets, Lambda Functions, VPC, ECS/EKS Clusters
+
+Table rows with name, description, and status (Active/-). Details panel shows config, version, scaling info
+
+Application Services
+
+Customer-facing, Core Backend, Supporting, Infrastructure (as discovered from topology)
+
+Category grouping with service list, replica count, dependency map link
+
+Events
+
+Kubernetes events, AWS CloudWatch alarms, custom alert events
+
+Feed of recent events with EVENT badge, entity name, source, and timestamp (relative + absolute GMT)
+
+
+
+
+7.2 Relationship Graph
+
+Each entity page shows a "Relationships and Events" section with two sub-panels:
+
+
+Infrastructure relationships: Shows parent/child entity relationships (e.g., Node shows all Workers/Pods running on it, Cluster shows all Nodes). "Show N More" pagination for large clusters.
+
+
+Events feed: Recent Kubernetes events, AWS alarms, or custom events scoped to the selected entity with relative + absolute timestamps.
+
+
+"Manage Relationships" button for manual relationship overrides
+
+
+Time selector (default: "Now", supports historical snapshots)
+
+
+
+
+
+8. Recommendations Engine
+
+
+8.1 Recommendation Types
+
+The Remediation Planner generates structured recommendations in four categories, each with a defined execution path:
+
+
+Type
+Description
+Execution Method
+Approval Required
+
+Immediate Rollback
+
+Revert recent deployment that introduced breaking change
+
+kubectl rollout undo / Argo CD rollback / Helm rollback command generated
+
+Team Lead or Auto if confidence ≥ 90%
+
+Configuration Fix
+
+Change environment variable, feature flag, Kubernetes config map, or AWS parameter
+
+kubectl patch / AWS SSM put-parameter / Terraform apply with targeted change
+
+On-call engineer or Team Lead
+
+Code Fix (PR)
+
+Fix root cause at the code level — generates complete diff and GitHub PR
+
+PR Generation Agent writes fix, Critique Agent reviews, PR submitted to GitHub with ASTRA label
+
+Code owner via standard GitHub review process
+
+Infra Scaling
+
+Immediate relief — scale replicas, increase RDS instance class, add K8s nodes
+
+kubectl scale / AWS Auto Scaling API / Terraform plan + apply (scoped)
+
+Auto-execute if within budget guardrails, else Team Lead
+
+Human Escalation
+
+Confidence too low or risk too high for autonomous action
+
+Structured handoff document with full context, evidence, and proposed next steps sent to on-call via PagerDuty + Slack
+
+N/A — human takes over
+
+
+
+
+8.2 Approval Workflow
+
+
+Tier 0 (Fully Autonomous): Read-only actions, log queries, metric fetches, topology discovery — no approval needed
+
+
+Tier 1 (Auto-Execute with Notification): Low-risk scaling ops within budget guardrails, feature flag toggles — executes and notifies Slack
+
+
+Tier 2 (1-Click Approval): Config changes, rollbacks — sends approval request to on-call engineer via Slack with "Approve" / "Reject" / "Modify" buttons
+
+
+Tier 3 (Code Owner Review): PRs — submitted to GitHub, requires code owner approval per CODEOWNERS file
+
+
+Tier 4 (Manual Only): High-risk infrastructure changes — ASTRA documents the fix but does not execute
+
+
+
+
+
+9. PR Generation Pipeline — Detailed Specification
+
+
+9.1 PR Generation Workflow
+
+The PR Generation Pipeline is the most technically complex ASTRA feature and a key differentiator. It uses CodeLlama 34B to produce production-quality code fixes informed by the complete RCA context.
+
+
+Step
+Agent
+Action
+
+1
+
+Evidence Synthesis Agent
+
+Identifies offending file(s), function(s), and line range(s) from RCA. Produces a precise code location reference: "packages/svc-entity-graph/src/db/event/postgres.ts lines 1331–1347"
+
+2
+
+Code & Deploy Agent
+
+Fetches current file content from GitHub at the identified commit/branch. Extracts the exact problematic code block with surrounding context (±50 lines).
+
+3
+
+PR Generation Agent
+
+Generates complete fixed code using CodeLlama 34B, informed by: root cause explanation, failing code block, error patterns from logs, performance requirements. Produces full before/after diff.
+
+4
+
+Critique Agent
+
+Reviews the generated fix for: correctness (does it actually fix the root cause?), safety (no regressions introduced), style (matches codebase conventions), completeness (all affected code paths covered).
+
+5
+
+PR Generation Agent
+
+If Critique passes: creates GitHub PR via API with structured PR description (see Section 9.2). If Critique fails: iterates up to 3 times before escalating to human.
+
+6
+
+Communication Agent
+
+Posts PR link to Slack incident thread: "ASTRA has created PR #123 to fix the deadlock issue. Requires review from code owners."
+
+7
+
+Orchestrator
+
+Adds PR URL to investigation report under "Suggested Next Steps". Updates plan status to reflect PR created. Monitors for PR merge to trigger investigation close.
+
+
+
+
+9.2 PR Description Template
+
+Every ASTRA-generated PR follows this standardized description structure:
+
+
+
+## [ASTRA] Fix: <root cause summary in < 10 words>
+
+### Incident Context
+
+- **Incident ID**: INC-XXXX  |  **Severity**: P1/P2  |  **Opened**: <timestamp>
+
+- **ASTRA RCA Confidence**: HIGH | **MTTR at PR creation**: Xm
+
+- **ASTRA Investigation**: [View Full Report](<ASTRA_URL>)
+
+### Root Cause
+
+<2-3 sentence technical explanation of root cause, e.g. "The batchUpdateAlertEvents() method introduced in commit abc123 lacks deterministic lock ordering, allowing concurrent requests to acquire row locks in different orders, causing circular lock dependencies and deadlocks under load.">
+
+### Fix Description
+
+- Added `batch.sort((a, b) => a.alertId.localeCompare(b.alertId))` before lock acquisition to enforce deterministic lock ordering
+
+### Files Changed | ### Testing | ### REI Financial Impact
+
+- Estimated revenue protected: $X,XXX/hour  |  SLA breach risk eliminated: YES  |  Linked to ASTRA REI dashboard
+
+
+
+
+9.3 Report View — Root Cause Identified Section
+
+When the RCA is confirmed, the right panel&apos;s Working Theory section transforms to a "Root Cause Identified" card that includes:
+
+
+🔎 Root Cause Identified header (search emoji), prominent and distinct from earlier hypothesis sections
+
+
+Primary culprit description: "The primary culprit is a resource-intensive SQL query:" followed by a syntax-highlighted code block
+
+
+Why this is problematic (bulleted): Specific technical reasons with code references inline
+
+
+Recommended fix: Shows before/after code diff with syntax highlighting, language label (typescript, sql, python, etc.)
+
+
+"Fixed Code" section: Complete corrected code block with a // CRITICAL FIX comment explaining the change
+
+
+
+
+
+10. Slack Integration
+
+
+10.1 Slack Investigation Thread Flow
+
+ASTRA&apos;s Slack integration creates a persistent, threaded investigation record in the incident channel:
+
+
+
+
+Alert ingestion: Grafana/PagerDuty alert fires; ASTRA Ecommerce Alerts bot posts alert details (labels, annotations, Grafana link) in the incident channel
+
+
+ASTRA auto-investigation post (5:17 AM): Within 60 seconds of alert, ASTRA posts findings summary with Findings section (numbered list) and Theories section (bullet list with theory name, em dash, explanation). Ends with "Investigation concluded" text + "View details at Resolve AI" CTA button + "Give Feedback" button.
+
+
+ASTRA resolution update (5:28 AM): "Investigation complete and updated above" post — links back to original investigation thread
+
+
+On-call query handling: Engineer can @mention ASTRA mid-thread ("is this issue still ongoing?"); ASTRA posts current status update with exact metrics (e.g., "Alert Condition: Still ACTIVE — frontend errors at ~92,240 per 10-minute window (614x above threshold of 150)"
+
+
+
+
+10.2 Slack Message Format Spec
+Message Type
+Format Spec
+
+Initial Triage Post
+
+Service name (bold link) + "is experiencing <symptom> due to <root entity> <behavior>" + key metrics as bullet list
+
+Findings Block
+
+Numbered list, each item a discrete observable fact with exact numbers and timestamps
+
+Theories Block
+
+Bullet list, bold theory name + em dash + brief explanation of causal mechanism
+
+Investigation Complete
+
+Checkmark emoji + "Investigation complete and updated above" with thread link
+
+Status Query Response
+
+Current timestamp header + status badge (ACTIVE/RESOLVED) + current metrics + trend indicator (Worsened/Improved)
+
+PR Created Notification
+
+"ASTRA has created PR #N to fix <description>. Requires review from <code owners>." with PR link button
+
+
+
+
+
+11. Peace-Time vs. War-Time Operating Modes
+
+ASTRA operates in two distinct modes, both using the same multi-agent infrastructure:
+
+
+Capability
+WAR-TIME (Incident Active)
+PEACE-TIME (Normal Operations)
+
+Primary trigger
+
+Alert fires, SLO breached, anomaly detected
+
+Scheduled or on-demand query from engineer
+
+Core output
+
+RCA report, timeline, PR fix, financial impact
+
+Dependency questions, health analysis, cost/anomaly report, on-call prep
+
+Investigation type
+
+Real-time, streaming, time-sensitive
+
+Thorough, non-urgent, exploratory
+
+Agent behavior
+
+Parallel execution, max throughput
+
+Sequential, cost-optimized execution
+
+PR generation
+
+Triggered automatically post-RCA for code root causes
+
+Available on-demand for proactive improvements
+
+REI output
+
+Real-time revenue at risk calculation
+
+Cost optimization recommendations, efficiency opportunities
+
+Slack behavior
+
+Auto-posts to incident channel thread
+
+Responds to @ASTRA queries in any channel
+
+
+
+
+
+12. REI — Reliability Economics Intelligence
+
+REI is CloudScore&apos;s unique differentiator — a standalone paid capability ($2,000–$5,000/month MRR) that connects incident intelligence to real-time financial impact. No competitor (including Resolve.ai) offers this out of the box.
+
+
+
+
+12.1 REI Agent Calculations
+
+
+Revenue at Risk: Incident duration × revenue rate (pulled from configured revenue-per-minute baseline) × affected service traffic percentage
+
+
+SLA Breach Cost: Real-time SLA credit calculation based on contractual uptime SLAs and current downtime window
+
+
+Infra Cost Spike: Anomalous compute spend during incident (runaway pods, retry storms, excess data transfer)
+
+
+Cumulative MTTR Cost: Engineer hours × burdened hourly rate × incident count this month
+
+
+ASTRA ROI: Monthly cost of incidents (pre-ASTRA baseline) vs. cost with ASTRA MTTR reduction — live ROI calculation
+
+
+
+
+12.2 REI Dashboard KPIs
+Metric
+Calculation
+Display Format
+
+Revenue Protected This Month
+
+Incidents resolved by ASTRA × avg revenue at risk per incident
+
+$XXX,XXX (vs. $XXX,XXX baseline)
+
+MTTR Reduction
+
+(Baseline MTTR - ASTRA MTTR) / Baseline MTTR
+
+XX% reduction (YY min → ZZ min)
+
+Incidents Auto-Resolved
+
+Count of incidents closed by ASTRA without human action
+
+XX/month (XX% of total)
+
+PRs Merged Successfully
+
+ASTRA PRs merged without human code changes
+
+XX/month (XX% success rate)
+
+SLA Breach Events Avoided
+
+Count of near-miss SLA breaches caught by ASTRA inside SLA window
+
+XX events ($XX,XXX avoided)
+
+
+
+
+
+13. MongoDB Atlas Data Models
+
+
+13.1 Core Collections
+Collection
+Key Fields
+
+incidents
+
+_id, alert_source, severity, status, affected_services[], created_at, resolved_at, mttr_seconds, rei_revenue_at_risk, rei_sla_breach_cost
+
+investigations
+
+_id, incident_id, plan_steps[], agent_log[], current_step, status, rca_confidence, working_theory, evidence_items[], created_at, updated_at
+
+rca_reports
+
+_id, investigation_id, confidence_level, headline, root_cause_mechanism, supporting_evidence[], timeline[], suggested_next_steps[], pr_url
+
+service_topology
+
+_id, service_name, entity_type, parent_entities[], child_entities[], aws_resources[], k8s_resources[], last_updated
+
+deployment_timeline
+
+_id, service_name, commit_sha, pr_url, author, deployed_at, files_changed[], deployment_type, rollback_available
+
+agent_memory
+
+_id, pattern_type, pattern_description, incidents_matched[], first_seen, last_seen, frequency, recommended_action
+
+generated_prs
+
+_id, incident_id, github_pr_url, pr_number, files_changed[], confidence_level, status, critique_result, merged_at
+
+rei_metrics
+
+_id, month_year, revenue_protected, mttr_reduction_pct, incidents_auto_resolved, prs_merged, sla_breaches_avoided, roi_calculated
+
+
+
+
+
+14. API Contracts
+
+
+14.1 Core Endpoints
+Method
+Path
+Request Body
+Response
+
+POST
+
+/api/v1/investigations
+
+{ alert_id, source, alert_payload, trigger_type }
+
+201: { investigation_id, status: "created", stream_url }
+
+GET
+
+/api/v1/investigations/:id
+
+—
+
+200: { investigation_id, plan_steps[], agent_log[], rca_report{}, status, confidence }
+
+GET
+
+/api/v1/investigations/:id/stream
+
+—
+
+SSE stream of { event_type, agent_name, step_name, content, timestamp }
+
+POST
+
+/api/v1/investigations/:id/message
+
+{ message, user_id }
+
+200: { queued: true, message_id }
+
+GET
+
+/api/v1/reports/:investigation_id
+
+—
+
+200: full RCA report JSON including evidence_items[], timeline[], suggested_next_steps[]
+
+POST
+
+/api/v1/prs/generate
+
+{ investigation_id, file_path, commit_sha }
+
+202: { pr_job_id, status: "generating" }
+
+GET
+
+/api/v1/prs/:pr_job_id
+
+—
+
+200: { status, github_pr_url, pr_number, diff_preview, critique_result }
+
+GET
+
+/api/v1/topology/:service_name
+
+—
+
+200: { service, entity_type, relationships[], events[], last_updated }
+
+GET
+
+/api/v1/rei/dashboard
+
+—
+
+200: current REI KPI metrics JSON
+
+POST
+
+/api/v1/webhooks/pagerduty
+
+PD webhook payload
+
+200: { investigation_id, triggered: true }
+
+POST
+
+/api/v1/webhooks/slack
+
+Slack event payload
+
+200: { acknowledged: true }
+
+
+
+
+
+15. Trust, Governance & Guardrails
+
+
+15.1 Approval Gates
+
+All ASTRA actions that modify production are gated through a tiered approval system (see Section 8.2). Every action is logged to an immutable audit trail in MongoDB Atlas with: agent name, action type, input parameters, output, approval user, timestamp, and investigation ID.
+
+
+
+
+15.2 RBAC Model
+Role
+Permissions
+Approval Authority
+
+Viewer
+
+Read investigations and reports
+
+Cannot approve any ASTRA actions
+
+On-Call Engineer
+
+Read + interact (message queue, trigger investigation)
+
+Tier 2 (config changes, rollbacks)
+
+Team Lead
+
+All above + remediation approval, PR review
+
+Tier 2 + Tier 3 (infra changes, high-risk ops)
+
+Admin
+
+Full ASTRA access + policy configuration, guardrail management
+
+All tiers including override
+
+ASTRA (Service Account)
+
+Automated Tier 0/1 actions, PR creation, Slack posts
+
+Tier 0 (read-only), Tier 1 (auto-exec within budget guardrails)
+
+
+
+
+15.3 Confidence Threshold Policies
+
+
+Auto-execute Tier 1 actions only when investigation confidence ≥ 90%
+
+
+Require Tier 2 approval for any action when confidence < 90% regardless of action type
+
+
+Block PR generation if Critique Agent score < 70% (iterate or escalate)
+
+
+Never auto-rollback if deployment is more than 72 hours old (too many downstream dependencies)
+
+
+Configurable per-team confidence thresholds and action blacklists
+
+
+
+
+
+16. Implementation Phasing
+Phase
+Timeline
+Deliverables
+Exit Criteria
+
+Phase 1
+MVP
+
+8 weeks
+
+LangGraph orchestration framework, Triage + Infra Discovery + Telemetry + Planner agents, Investigation UI (split panel), Basic RCA report with confidence badge, PagerDuty + Slack webhooks
+
+MTTR < 20 min for P1 incidents; RCA confidence ≥ HIGH in 60%+ of cases; 5 pilot customers live
+
+Phase 2
+RCA+
+
+6 weeks
+
+Evidence Synthesis + Code & Deploy + Log Analysis agents, Evidence reference system (clickable dots), Causal timeline, "Root Cause Identified" section, Service topology UI
+
+RCA confidence ≥ HIGH in 80%+ of cases; evidence quality score > 4.0/5.0 from pilot users
+
+Phase 3
+Remediation
+
+6 weeks
+
+Remediation Planner + PR Generation + Critique agents, GitHub PR pipeline (CodeLlama 34B), Approval workflow (Tier 0–4), Rollback automation, Slack approval buttons
+
+PR merge success rate ≥ 70%; zero production incidents caused by ASTRA-generated PRs
+
+Phase 4
+REI
+
+4 weeks
+
+REI Agent, REI dashboard, Financial impact on all incident records, ASTRA ROI calculator, REI API for billing module, Standalone REI product packaging
+
+REI accuracy ± 15%; first REI standalone subscription revenue
+
+Phase 5
+Learning
+
+4 weeks
+
+Learning Agent, Agent memory persistence, Pattern detection, Recurring incident flagging, Service topology continuous update, Postmortem auto-draft
+
+Learning Agent reduces RCA time by 20% on recurring patterns vs Phase 4 baseline
+
+
+
+
+
+17. Competitive Differentiation vs. Resolve.ai
+Capability
+Resolve.ai
+ASTRA (CloudScore)
+
+LLM Architecture
+
+Proprietary closed LLMs (GPT-4 class)
+Open-source Ollama — no token cost, on-premise option, customer data never leaves their cloud
+
+Financial Impact (REI)
+
+Not available
+Native REI agent — real-time revenue at risk, SLA cost, infra cost, MTTR cost, ROI dashboard
+
+FinOps + SRE fusion
+
+SRE only
+CloudScore uniquely combines FinOps intelligence with SRE response — incidents tagged with cost context automatically
+
+Multi-cloud FinOps
+
+Not in scope
+Native multi-cloud cost visibility (AWS + Azure + GCP) — ASTRA knows the cost of every infra resource involved in an incident
+
+Agent count / specialization
+
+~5 observed agent types
+16 specialized agents, each with task-optimized LLM model selection
+
+PR Generation quality
+
+Available — quality not independently verified
+CodeLlama 34B with Critique Agent review loop — iterates up to 3× for quality assurance
+
+Pricing model
+
+Enterprise SaaS (high ACV)
+SaaS + REI standalone module ($2K–$5K/month) — accessible mid-market entry point
+
+Acquisition target fit
+
+Independent / funding stage
+Explicitly positioned for strategic acquisition by Flexera, IBM Apptio, Datadog, or nOps
+
+
+
+
+
+18. Open Questions & Risks
+Risk / Open Question
+Impact
+Mitigation
+
+Ollama GPU node pool costs (CodeLlama 34B + Llama 3.1 70B in parallel)
+
+HIGH
+
+Implement model quantization (GGUF Q4/Q5), use GPU spot instances, implement request queuing with priority lanes. AWS Activate credits to offset initial cost.
+
+False positive RCA rate > 12% target in Phase 1
+
+MEDIUM
+
+Start with Critique Agent threshold at 80%; tune confidence model on real incident data; collect user feedback via thumbs up/down on every report.
+
+PR Generation Agent produces code that doesn&apos;t compile
+
+HIGH
+
+Mandatory compile/lint check in Critique Agent pipeline; never submit PR without passing static analysis; sandbox test environment for generated fixes.
+
+GitHub API rate limits during large-scale code traversal
+
+MEDIUM
+
+Implement GitHub App (higher rate limits); local code mirror cache in MongoDB Atlas; progressive fetch strategy (fetch only changed files first).
+
+Customer data sensitivity in Ollama prompt context
+
+HIGH
+
+PII scrubbing pipeline before any data enters LLM context; configurable redaction rules per customer; SOC 2 Type II compliance roadmap.
+
+Resolve.ai competitive response / feature parity acceleration
+
+MEDIUM
+
+Maintain 12-month moat via REI (unique differentiator) and open-source LLM architecture (cost moat for mid-market)
+
+
+
+
+
+Appendix A — Glossary
+Term
+Definition
+
+ASTRA
+
+Autonomous SRE & Threat Response Architecture — CloudScore&apos;s 16-agent incident intelligence platform
+
+REI
+
+Reliability Economics Intelligence — CloudScore&apos;s proprietary capability connecting incident data to financial impact
+
+RCA
+
+Root Cause Analysis — the process of identifying the fundamental reason for an incident or performance degradation
+
+MTTR
+
+Mean Time to Resolution — average time from incident detection to full resolution
+
+LangGraph
+
+Open-source framework for building stateful multi-agent LLM applications with cyclical graphs
+
+Ollama
+
+Open-source LLM runtime enabling local/on-premise execution of models like Llama 3.1 70B and CodeLlama 34B
+
+IncidentState
+
+The LangGraph TypedDict that carries all investigation state (alert context, evidence, hypotheses, plan, approvals) across the 16 agents
+
+MCP Server
+
+Model Context Protocol server — ASTRA&apos;s OAuth 2.0 tool catalog enabling standardized integration with external APIs (GitHub, Datadog, Jira, PD, etc.)
+
+Confidence Score
+
+A 0–100 point score assigned to each RCA hypothesis based on corroborating evidence count, signal diversity, and causal chain completeness
+
+Critique Agent
+
+ASTRA&apos;s internal quality gate that reviews RCA hypotheses and generated PRs before they are surfaced to humans or submitted to GitHub
+
+
+
+— END OF DOCUMENT —
+
+CloudScore.ai  |  ASTRA PRD v1.0  |  April 2026  |  CONFIDENTIAL
+
+
